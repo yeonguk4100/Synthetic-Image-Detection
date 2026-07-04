@@ -2,6 +2,9 @@
 
 이미지가 진짜인지 합성·조작된 것인지 분류하고, **어느 영역이 조작되었는지**까지 함께 제시하는 2단계 기반 시스템입니다. 단순 진짜/가짜 판별을 넘어 판단 근거를 시각적으로 보여주는 데 초점을 맞췄습니다.
 
+![조작 탐지 예시](docs/images/sample_composite_correct.png)
+*합성 이미지 탐지 예시 — Stage 1 heatmap이 조작 의심 영역(빨간색)을 짚어내고, Stage 2가 composite(prob=0.966)로 분류*
+
 ## 결과 요약
 
 | 지표 | 값 |
@@ -13,6 +16,10 @@
 | 전체 데이터 | 30,000장 (진짜 15,000 + 합성 15,000) |
 
 최적 설정: heatmap threshold = 0.6, top-k = 5, feature version = Version4, 분류 threshold = 0.40
+
+| Test (3,000장) | Validation (6,000장) |
+|:---:|:---:|
+| ![Test Confusion Matrix](docs/images/confusion_matrix_test.png) | ![Validation Confusion Matrix](docs/images/confusion_matrix_validation.png) |
 
 ## 시스템 구조
 
@@ -34,7 +41,30 @@
 
 핵심 가설: Stage 1이 찾아낸 "조작 의심 위치"를 Stage 2의 힌트로 사용하면, 이미지만 보고 판별할 때보다 정확도와 설명 가능성이 함께 높아진다.
 
-가장 기여도가 높았던 feature는 `max_suspicious_score` (SHAP 평균 절댓값 1.42)로, Stage 1 heatmap의 최대 confidence가 분류에 결정적이었습니다.
+설계 원칙:
+- 한 모델이 위치(mask)와 분류(label)를 동시에 맞추면 loss trade-off가 발생하므로, Stage 1은 위치 추정, Stage 2는 최종 분류로 역할을 분리
+- inference 입력은 **이미지 1장만** 사용 (mask는 Stage 1 학습·평가용 GT로만 사용, test 입력에 미포함)
+- tabular feature 기반 LightGBM을 채택해 SHAP으로 판단 근거를 설명 가능하게 설계
+
+## 예측 예시
+
+| 성공 사례 | 실패 사례 |
+|:---:|:---:|
+| ![composite 탐지 성공](docs/images/sample_composite_correct.png) | ![composite 탐지 실패](docs/images/sample_composite_wrong.png) |
+| **합성 이미지 탐지 성공** — heatmap이 삽입 영역을 강하게 포착 (prob=0.966, max_score=0.85) | **합성 이미지 놓침** — 조작 영역의 경계 불일치가 약해 heatmap 반응이 낮음 (prob=0.148, max_score=0.31) |
+| ![real 판별 성공](docs/images/sample_real_correct.png) | ![real 오탐](docs/images/sample_real_wrong.png) |
+| **진짜 이미지 정상 판별** — heatmap 전반이 조용함 (prob=0.062, max_score=0.29) | **진짜 이미지 오탐** — 자연스러운 고대비 영역을 조작으로 오인 (prob=0.735, max_score=0.77) |
+
+실패 사례 두 건 모두 `max_suspicious_score`가 분류를 좌우했음을 보여줍니다. Stage 1 heatmap 품질이 곧 최종 성능의 상한이라는 구조적 특성이 드러납니다.
+
+## 판단 근거 분석 (SHAP)
+
+![SHAP Feature Importance](docs/images/shap_importance.png)
+
+가장 기여도가 높았던 feature는 `max_suspicious_score` (SHAP 평균 절댓값 1.42)로, Stage 1 heatmap의 최대 confidence가 분류에 결정적이었습니다. 이는 "heatmap을 분류 feature로 쓰면 유효하다"는 시작 가설을 뒷받침합니다.
+
+![SHAP Summary Plot](docs/images/shap_summary.png)
+*beeswarm plot — 각 feature 값의 높낮이(색)가 composite/real 판단(x축)에 미친 방향과 크기*
 
 ## 데이터셋
 
@@ -44,6 +74,14 @@
 | 합성 (label 1) | DEFACTO | 15,000 |
 
 split 구성: train 21,000 / validation 6,000 / test 3,000 (각 클래스 균형). `group_id` 기준으로 split 간 데이터 누수가 없도록 분리했습니다.
+
+## 검증 전략
+
+| 단계 | 방법 |
+|------|------|
+| Stage 1 (U-Net) | Repeated Hold-out 3회 |
+| Stage 2 (LightGBM) | 5-fold Cross Validation |
+| 최종 threshold 선택 | validation 기준 탐색 후 test 1회 평가 |
 
 ## 폴더 구조
 
@@ -66,7 +104,8 @@ synthetic-image-detection/
 │  ├─ demo_v2_02.ipynb      # 데모 (결과 시각화 포함)
 │  └─ demo_v2_03.ipynb      # 데모 (결과 시각화 포함)
 │
-├─ docs/                    # 발표 자료
+├─ docs/                    # 발표 자료 + README 이미지
+│  ├─ images/               # README 삽입용 시각화 PNG
 │  ├─ 발표대본.docx
 │  ├─ 발표자료.pptx
 │  └─ colab_실행기록.pdf
@@ -93,6 +132,14 @@ synthetic-image-detection/
 7. `step05_evaluate.py` — 최종 평가 + 시각화
 
 `notebooks/runner_share_v1.ipynb`를 사용하면 위 과정을 한 번에 실행할 수 있습니다.
+
+## 한계와 개선 방향
+
+- **JPG 압축 아티팩트**: 저장 포맷에 따른 mask 경계 손실 → mask closing 연산으로 GT 품질 보완
+- **입력 해상도**: 현재보다 큰 512 해상도 학습으로 미세한 경계 불일치 포착력 향상
+- **Stage 1 아키텍처**: U-Net → U-Net++ 등 skip connection 강화 구조 실험
+- **클래스 불균형 대응**: pixel 단위 positive 비율이 낮은 문제에 `pos_weight` 조정 적용
+- **구조적 한계**: 실패 사례에서 확인했듯 Stage 2 성능이 Stage 1 heatmap 품질에 종속됨 → Stage 1 개선이 최우선
 
 ## 제외된 항목 안내
 
