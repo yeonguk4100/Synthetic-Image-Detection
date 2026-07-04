@@ -106,11 +106,6 @@ synthetic-image-detection/
 │  ├─ demo_v2_02.ipynb      # 데모 (결과 시각화 포함)
 │  └─ demo_v2_03.ipynb      # 데모 (결과 시각화 포함)
 │
-├─ docs/                    # 발표 자료
-│  ├─ 발표대본.docx
-│  ├─ 발표자료.pptx
-│  └─ colab_실행기록.pdf
-│
 └─ results/                 # 결과물 (가벼운 것만)
    ├─ best_config.json      # 최적 설정
    ├─ test_metrics.json     # 최종 성능 지표
