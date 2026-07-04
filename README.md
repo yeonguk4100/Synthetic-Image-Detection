@@ -2,7 +2,8 @@
 
 이미지가 진짜인지 합성·조작된 것인지 분류하고, **어느 영역이 조작되었는지**까지 함께 제시하는 2단계 기반 시스템입니다. 단순 진짜/가짜 판별을 넘어 판단 근거를 시각적으로 보여주는 데 초점을 맞췄습니다.
 
-![조작 탐지 예시](<img width="1937" height="643" alt="Image" src="https://github.com/user-attachments/assets/5329dd97-30f4-422c-8926-27cc5f880ce9" />)
+<img width="1937" height="643" alt="조작 탐지 예시" src="https://github.com/user-attachments/assets/5329dd97-30f4-422c-8926-27cc5f880ce9" />
+
 *합성 이미지 탐지 예시 — Stage 1 heatmap이 조작 의심 영역(빨간색)을 짚어내고, Stage 2가 composite(prob=0.966)로 분류*
 
 ## 결과 요약
@@ -19,8 +20,7 @@
 
 | Test (3,000장) | Validation (6,000장) |
 |:---:|:---:|
-| ![Test Confusion Matrix](<img width="465" height="501" alt="Image" src="https://github.com/user-attachments/assets/e6ce9c17-43c2-45b7-86ff-f27b01f1c87b" />) | ![Validation Confusion Matrix](<img width="465" height="501" alt="Image" src="https://github.com/user-attachments/assets/a33d58fd-c956-4608-8f8e-f5c0418de29b" />
-) |
+| <img width="465" alt="Test Confusion Matrix" src="https://github.com/user-attachments/assets/e6ce9c17-43c2-45b7-86ff-f27b01f1c87b" /> | <img width="465" alt="Validation Confusion Matrix" src="https://github.com/user-attachments/assets/a33d58fd-c956-4608-8f8e-f5c0418de29b" /> |
 
 ## 시스템 구조
 
@@ -51,21 +51,21 @@
 
 | 성공 사례 | 실패 사례 |
 |:---:|:---:|
-| ![composite 탐지 성공](<img width="1937" height="643" alt="Image" src="https://github.com/user-attachments/assets/5329dd97-30f4-422c-8926-27cc5f880ce9" />
-) | ![composite 탐지 실패](<img width="1936" height="643" alt="Image" src="https://github.com/user-attachments/assets/d20728ae-51cb-4fd7-8fe9-fef710468e56" />) |
+| <img width="1937" alt="composite 탐지 성공" src="https://github.com/user-attachments/assets/5329dd97-30f4-422c-8926-27cc5f880ce9" /> | <img width="1936" alt="composite 탐지 실패" src="https://github.com/user-attachments/assets/d20728ae-51cb-4fd7-8fe9-fef710468e56" /> |
 | **합성 이미지 탐지 성공** — heatmap이 삽입 영역을 강하게 포착 (prob=0.966, max_score=0.85) | **합성 이미지 놓침** — 조작 영역의 경계 불일치가 약해 heatmap 반응이 낮음 (prob=0.148, max_score=0.31) |
-| ![real 판별 성공](<img width="1936" height="643" alt="Image" src="https://github.com/user-attachments/assets/4bff679d-3b01-4cd7-a1e1-17fd45565f18" />) | ![real 오탐](<img width="1184" height="821" alt="Image" src="https://github.com/user-attachments/assets/3c4a0428-acfe-46e2-8fd1-adf70f0608cf" />) |
+| <img width="1936" alt="real 판별 성공" src="https://github.com/user-attachments/assets/4bff679d-3b01-4cd7-a1e1-17fd45565f18" /> | <img width="1937" alt="real 오탐" src="https://github.com/user-attachments/assets/0ddcacae-af38-4148-8075-539b60f3cd7d" /> |
 | **진짜 이미지 정상 판별** — heatmap 전반이 조용함 (prob=0.062, max_score=0.29) | **진짜 이미지 오탐** — 자연스러운 고대비 영역을 조작으로 오인 (prob=0.735, max_score=0.77) |
 
 실패 사례 두 건 모두 `max_suspicious_score`가 분류를 좌우했음을 보여줍니다. Stage 1 heatmap 품질이 곧 최종 성능의 상한이라는 구조적 특성이 드러납니다.
 
 ## 판단 근거 분석 (SHAP)
 
-![SHAP Feature Importance](<img width="1937" height="643" alt="Image" src="https://github.com/user-attachments/assets/0ddcacae-af38-4148-8075-539b60f3cd7d" />)
+<img width="1184" height="821" alt="SHAP Feature Importance" src="https://github.com/user-attachments/assets/3c4a0428-acfe-46e2-8fd1-adf70f0608cf" />
 
 가장 기여도가 높았던 feature는 `max_suspicious_score` (SHAP 평균 절댓값 1.42)로, Stage 1 heatmap의 최대 confidence가 분류에 결정적이었습니다. 이는 "heatmap을 분류 feature로 쓰면 유효하다"는 시작 가설을 뒷받침합니다.
 
-![SHAP Summary Plot](<img width="1169" height="1167" alt="Image" src="https://github.com/user-attachments/assets/b99e1e3a-5b75-478f-b632-07830c08fdb3" />)
+<img width="700" alt="SHAP Summary Plot" src="https://github.com/user-attachments/assets/b99e1e3a-5b75-478f-b632-07830c08fdb3" />
+
 *beeswarm plot — 각 feature 값의 높낮이(색)가 composite/real 판단(x축)에 미친 방향과 크기*
 
 ## 데이터셋
@@ -106,8 +106,7 @@ synthetic-image-detection/
 │  ├─ demo_v2_02.ipynb      # 데모 (결과 시각화 포함)
 │  └─ demo_v2_03.ipynb      # 데모 (결과 시각화 포함)
 │
-├─ docs/                    # 발표 자료 + README 이미지
-│  ├─ images/               # README 삽입용 시각화 PNG (1~8)
+├─ docs/                    # 발표 자료
 │  ├─ 발표대본.docx
 │  ├─ 발표자료.pptx
 │  └─ colab_실행기록.pdf
