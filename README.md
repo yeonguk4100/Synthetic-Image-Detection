@@ -2,7 +2,7 @@
 
 이미지가 진짜인지 합성·조작된 것인지 분류하고, **어느 영역이 조작되었는지**까지 함께 제시하는 2단계 기반 시스템입니다. 단순 진짜/가짜 판별을 넘어 판단 근거를 시각적으로 보여주는 데 초점을 맞췄습니다.
 
-![조작 탐지 예시](docs/images/sample_composite_correct.png)
+![조작 탐지 예시](<img width="465" height="501" alt="Image" src="https://github.com/user-attachments/assets/f24267ad-a77d-4f4e-91d5-da1860218a84" />)
 *합성 이미지 탐지 예시 — Stage 1 heatmap이 조작 의심 영역(빨간색)을 짚어내고, Stage 2가 composite(prob=0.966)로 분류*
 
 ## 결과 요약
@@ -19,7 +19,9 @@
 
 | Test (3,000장) | Validation (6,000장) |
 |:---:|:---:|
-| ![Test Confusion Matrix](docs/images/confusion_matrix_test.png) | ![Validation Confusion Matrix](docs/images/confusion_matrix_validation.png) |
+| ![Test Confusion Matrix](
+<img width="465" height="501" alt="Image" src="https://github.com/user-attachments/assets/c710d9cd-6c63-4c39-9b5b-1ab5283edd26" />
+) | ![Validation Confusion Matrix](<img width="1937" height="643" alt="Image" src="https://github.com/user-attachments/assets/b79e64b5-6ed3-4bfd-a860-67de3ecaca03" />) |
 
 ## 시스템 구조
 
@@ -50,16 +52,16 @@
 
 | 성공 사례 | 실패 사례 |
 |:---:|:---:|
-| ![composite 탐지 성공](docs/images/sample_composite_correct.png) | ![composite 탐지 실패](docs/images/sample_composite_wrong.png) |
+| ![composite 탐지 성공](<img width="1184" height="821" alt="Image" src="https://github.com/user-attachments/assets/82a1a53c-a11d-43b3-9229-1050bea1f3b9" />) | ![composite 탐지 실패](<img width="1169" height="1167" alt="Image" src="https://github.com/user-attachments/assets/8ec3f701-4925-4873-b564-0e752dd3b2b8" />) |
 | **합성 이미지 탐지 성공** — heatmap이 삽입 영역을 강하게 포착 (prob=0.966, max_score=0.85) | **합성 이미지 놓침** — 조작 영역의 경계 불일치가 약해 heatmap 반응이 낮음 (prob=0.148, max_score=0.31) |
-| ![real 판별 성공](docs/images/sample_real_correct.png) | ![real 오탐](docs/images/sample_real_wrong.png) |
+| ![real 판별 성공](<img width="1937" height="643" alt="Image" src="https://github.com/user-attachments/assets/b1636839-2610-4679-ad41-349c76046d17" />) | ![real 오탐](<img width="1936" height="643" alt="Image" src="https://github.com/user-attachments/assets/3b7ce3e6-cb70-4b62-ad0c-4ca4eaf1aa3d" />) |
 | **진짜 이미지 정상 판별** — heatmap 전반이 조용함 (prob=0.062, max_score=0.29) | **진짜 이미지 오탐** — 자연스러운 고대비 영역을 조작으로 오인 (prob=0.735, max_score=0.77) |
 
 실패 사례 두 건 모두 `max_suspicious_score`가 분류를 좌우했음을 보여줍니다. Stage 1 heatmap 품질이 곧 최종 성능의 상한이라는 구조적 특성이 드러납니다.
 
 ## 판단 근거 분석 (SHAP)
 
-![SHAP Feature Importance](docs/images/shap_importance.png)
+![SHAP Feature Importance](<img width="1936" height="643" alt="Image" src="https://github.com/user-attachments/assets/37e5a20c-7118-4f64-92bf-b557e9830a20" />)
 
 가장 기여도가 높았던 feature는 `max_suspicious_score` (SHAP 평균 절댓값 1.42)로, Stage 1 heatmap의 최대 confidence가 분류에 결정적이었습니다. 이는 "heatmap을 분류 feature로 쓰면 유효하다"는 시작 가설을 뒷받침합니다.
 
